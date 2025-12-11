@@ -34,7 +34,7 @@ export const register = async (req, res) => {
       .insert(usersTable)
       .values({ email, firstname, lastname, password: hashPassword })
       .returning({
-        id: usersTable.idUser,
+        idUser: usersTable.idUser,
         email: usersTable.email,
         firstname: usersTable.firstname,
         lastname: usersTable.lastname,
@@ -42,7 +42,7 @@ export const register = async (req, res) => {
 
     const token = jwt.sign(
       {
-        userId: userData.id,
+        userId: userData.idUser,
       },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
@@ -92,7 +92,7 @@ export const login = async (req, res) => {
 
     const token = jwt.sign(
       {
-        userId: userResult.id,
+        userId: userResult.idUser,
       },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
@@ -101,7 +101,7 @@ export const login = async (req, res) => {
     return res.status(201).send({
       message: "User logged.",
       user: {
-        id: userResult.idUser,
+        idUser: userResult.idUser,
         email: userResult.email,
         firstname: userResult.firstname,
         lastname: userResult.lastname,

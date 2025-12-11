@@ -13,5 +13,5 @@ export const loginSchema = z.object({
 });
 
 export const userIdSchema = z.object({
-  id: z.uuid(),
+  idUser: z.uuid(),
 });
