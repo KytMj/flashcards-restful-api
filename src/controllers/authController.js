@@ -13,11 +13,10 @@ import jwt from "jsonwebtoken";
  */
 export const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { firstname, lastname, email, password } = req.body;
     const salt = await bcrypt.genSalt(12);
 
     const hashPassword = await bcrypt.hash(password, salt);
-    console.log(hashPassword);
 
     const [result] = await db
       .select()
@@ -29,13 +28,16 @@ export const register = async (req, res) => {
       });
     }
 
+    console.log(firstname, lastname, email, hashPassword);
+
     const userData = await db
       .insert(usersTable)
-      .values({ email, username, password: hashPassword })
+      .values({ email, firstname, lastname, password: hashPassword })
       .returning({
-        id: usersTable.id,
+        id: usersTable.idUser,
         email: usersTable.email,
-        username: usersTable.username,
+        firstname: usersTable.firstname,
+        lastname: usersTable.lastname,
       });
 
     const token = jwt.sign(
@@ -99,9 +101,10 @@ export const login = async (req, res) => {
     return res.status(201).send({
       message: "User logged.",
       user: {
-        id: userResult.id,
+        id: userResult.idUser,
         email: userResult.email,
-        username: userResult.username,
+        firstname: userResult.firstname,
+        lastname: userResult.lastname,
       },
       token: token,
     });
