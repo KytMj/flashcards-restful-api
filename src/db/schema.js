@@ -37,7 +37,7 @@ export const collectionsTable = sqliteTable("collections", {
     .notNull()
     .$defaultFn(() => new Date()),
   idUser: text("id_user")
-    .references(() => usersTable.idUser)
+    .references(() => usersTable.idUser, { onDelete: "cascade" })
     .notNull(),
 });
 
@@ -48,7 +48,7 @@ export const flashcardsTable = sqliteTable("flashcards", {
   rectoText: text("recto_text", { length: 255 }).notNull(),
   versoText: text("verso_text", { length: 255 }).notNull(),
   idCollection: text("id_collection")
-    .references(() => collectionsTable.idCollection)
+    .references(() => collectionsTable.idCollection, { onDelete: "cascade" })
     .notNull(),
 });
 
@@ -72,10 +72,10 @@ export const reviewsTable = sqliteTable("reviews", {
       return date;
     }),
   idUser: text("id_user")
-    .references(() => usersTable.idUser)
+    .references(() => usersTable.idUser, { onDelete: "cascade" })
     .notNull(),
   idFlashcard: text("id_flashcard")
-    .references(() => flashcardsTable.idFlashcard)
+    .references(() => flashcardsTable.idFlashcard, { onDelete: "cascade" })
     .notNull(),
 });
 
@@ -90,7 +90,7 @@ export const urlsTable = sqliteTable("urls", {
     .default("RECTO"),
   url: text({ length: 2083 }).notNull(),
   idFlashcard: text("id_flashcard")
-    .references(() => flashcardsTable.idFlashcard)
+    .references(() => flashcardsTable.idFlashcard, { onDelete: "cascade" })
     .notNull(),
 });
 

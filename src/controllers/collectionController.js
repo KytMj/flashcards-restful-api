@@ -32,6 +32,7 @@ export const getUserCollections = async (req, res) => {
 export const getCollection = async (req, res) => {
   const { userId, userRole } = req.user;
   const { idCollection } = req.params;
+
   try {
     const [result] = await db
       .select()
@@ -129,6 +130,55 @@ export const postUserCollection = async (req, res) => {
     console.log(err);
     return res.status(500).send({
       error: "Failed to insert collection",
+    });
+  }
+};
+
+/**
+ *
+ * @param {request} req
+ * @param {response} res
+ * @returns
+ */
+export const deleteCollection = async (req, res) => {
+  const { userId, userRole } = req.user;
+  const { idCollection } = req.params;
+
+  try {
+    const [userResult] = await db
+      .select()
+      .from(collectionsTable)
+      .where(
+        and(
+          eq(collectionsTable.idCollection, idCollection),
+          eq(collectionsTable.idUser, userId)
+        )
+      );
+
+    if (!userResult && userRole !== "ADMIN") {
+      return res.status(403).send({
+        message: `Unauthorized to delete this collection.`,
+      });
+    }
+
+    const [result] = await db
+      .delete(collectionsTable)
+      .where(eq(collectionsTable.idCollection, idCollection))
+      .returning();
+
+    if (!result) {
+      return res.status(404).send({
+        message: `Collection ${idCollection} not found.`,
+      });
+    }
+
+    return res.status(200).send({
+      message: `Collection ${idCollection} deleted succesfully.`,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      error: "Failed to delete collection.",
     });
   }
 };

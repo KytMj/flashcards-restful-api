@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deleteCollection,
   getCollection,
   getUserCollections,
   postUserCollection,
@@ -24,6 +25,11 @@ router.post(
   "/search",
   validateBody(searchCollectionSchema),
   searchPublicCollections
+);
+router.delete(
+  "/:idCollection",
+  validateParams(collectionIdSchema),
+  deleteCollection
 );
 
 export default router;
