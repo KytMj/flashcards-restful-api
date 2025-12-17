@@ -30,6 +30,7 @@ export const getUserCollections = async (req, res) => {
  * @returns
  */
 export const getCollection = async (req, res) => {
+  const { userId, userRole } = req.user;
   const { idCollection } = req.params;
   try {
     const [result] = await db
@@ -42,11 +43,53 @@ export const getCollection = async (req, res) => {
         message: `Question ${idCollection} not found.`,
       });
     }
-    // TODO : vérifier si privé, le propriétaire
+
+    if (
+      result.visibility === "PRIVATE" &&
+      userId !== result.idUser &&
+      userRole !== "ADMIN"
+    ) {
+      return res.status(401).send({
+        error: "Unauthorized",
+      });
+    }
+
     return res.status(200).send(result);
   } catch (err) {
     return res.status(500).send({
-      error: "Failed to fetch question",
+      error: "Failed to fetch collection",
+    });
+  }
+};
+
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @returns
+ */
+export const postUserCollection = async (req, res) => {
+  const { userId } = req.user;
+  const { title, description = null, visibility } = req.body;
+
+  try {
+    const result = await db
+      .insert(collectionsTable)
+      .values({
+        title,
+        description,
+        visibility,
+        idUser: userId,
+      })
+      .returning();
+    return res.status(201).send({
+      message: "Collection created succesfully.",
+      question: result,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      error: "Failed to insert collection",
     });
   }
 };

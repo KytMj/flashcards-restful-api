@@ -22,7 +22,8 @@ export const checkToken = (req, res, next) => {
 
     if (decodedToken) {
       const userId = decodedToken.userId;
-      req.user = { userId };
+      const userRole = decodedToken.userRole;
+      req.user = { userId, userRole };
       next();
     }
   } catch (err) {

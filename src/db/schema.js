@@ -25,7 +25,7 @@ export const collectionsTable = sqliteTable("collections", {
     .primaryKey()
     .$defaultFn(() => randomUUID()),
   title: text({ length: 64 }).notNull(),
-  description: text({ length: 255 }).notNull(),
+  description: text({ length: 255 }),
   visibility: text({ enum: ["PRIVATE", "PUBLIC"] })
     .notNull()
     .default("PRIVATE"),
@@ -35,7 +35,9 @@ export const collectionsTable = sqliteTable("collections", {
   updatedAt: integer("updated_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
-  idUser: text("id_user").references(() => usersTable.idUser),
+  idUser: text("id_user")
+    .references(() => usersTable.idUser)
+    .notNull(),
 });
 
 export const flashcardsTable = sqliteTable("flashcards", {
@@ -44,9 +46,9 @@ export const flashcardsTable = sqliteTable("flashcards", {
     .$defaultFn(() => randomUUID()),
   rectoText: text("recto_text", { length: 255 }).notNull(),
   versoText: text("verso_text", { length: 255 }).notNull(),
-  idCollection: text("id_collection").references(
-    () => collectionsTable.idCollection
-  ),
+  idCollection: text("id_collection")
+    .references(() => collectionsTable.idCollection)
+    .notNull(),
 });
 
 export const reviewsTable = sqliteTable("reviews", {
@@ -68,10 +70,12 @@ export const reviewsTable = sqliteTable("reviews", {
       date.setDate(date.getDate() + 1);
       return date;
     }),
-  idUser: text("id_user").references(() => usersTable.idUser),
-  idFlashcard: text("id_flashcard").references(
-    () => flashcardsTable.idFlashcard
-  ),
+  idUser: text("id_user")
+    .references(() => usersTable.idUser)
+    .notNull(),
+  idFlashcard: text("id_flashcard")
+    .references(() => flashcardsTable.idFlashcard)
+    .notNull(),
 });
 
 export const urlsTable = sqliteTable("urls", {
@@ -84,7 +88,7 @@ export const urlsTable = sqliteTable("urls", {
     .notNull()
     .default("RECTO"),
   url: text({ length: 2083 }).notNull(),
-  idFlashcard: text("id_flashcard").references(
-    () => flashcardsTable.idFlashcard
-  ),
+  idFlashcard: text("id_flashcard")
+    .references(() => flashcardsTable.idFlashcard)
+    .notNull(),
 });

@@ -35,6 +35,7 @@ export const register = async (req, res) => {
       .values({ email, firstname, lastname, password: hashPassword })
       .returning({
         idUser: usersTable.idUser,
+        role: usersTable.role,
         email: usersTable.email,
         firstname: usersTable.firstname,
         lastname: usersTable.lastname,
@@ -43,6 +44,7 @@ export const register = async (req, res) => {
     const token = jwt.sign(
       {
         userId: userData.idUser,
+        userRole: userData.role,
       },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
@@ -93,6 +95,7 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       {
         userId: userResult.idUser,
+        userRole: userResult.role,
       },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
