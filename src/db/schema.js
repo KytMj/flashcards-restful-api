@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { SQL, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export const usersTable = sqliteTable("users", {
@@ -92,3 +93,12 @@ export const urlsTable = sqliteTable("urls", {
     .references(() => flashcardsTable.idFlashcard)
     .notNull(),
 });
+
+/**
+ *
+ * @param {string} text
+ * @returns SQL
+ */
+export function lower(text) {
+  return sql`lower(${text})`;
+}

@@ -9,3 +9,9 @@ export const postCollectionSchema = z.object({
   description: z.string().max(255).optional(),
   visibility: z.enum(["PUBLIC", "PRIVATE"]),
 });
+
+export const searchCollectionSchema = z
+  .object({
+    title: z.string().max(64).optional(),
+  })
+  .optional();

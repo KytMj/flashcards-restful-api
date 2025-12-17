@@ -1,6 +1,6 @@
 import { db } from "../db/database.js";
-import { collectionsTable, usersTable } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { collectionsTable, lower } from "../db/schema.js";
+import { eq, and, like } from "drizzle-orm";
 
 /**
  *
@@ -40,7 +40,7 @@ export const getCollection = async (req, res) => {
       .orderBy("createdAt", "desc");
     if (!result) {
       return res.status(404).send({
-        message: `Question ${idCollection} not found.`,
+        message: `Collection ${idCollection} not found.`,
       });
     }
 
@@ -56,6 +56,45 @@ export const getCollection = async (req, res) => {
 
     return res.status(200).send(result);
   } catch (err) {
+    return res.status(500).send({
+      error: "Failed to fetch collection",
+    });
+  }
+};
+
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @returns
+ */
+export const searchPublicCollections = async (req, res) => {
+  const title = req.body?.title ?? null;
+
+  try {
+    const result = await db
+      .select()
+      .from(collectionsTable)
+      .where(
+        and(
+          title
+            ? like(lower(collectionsTable.title), `%${title.toLowerCase()}%`)
+            : undefined,
+          eq(collectionsTable.visibility, "PUBLIC")
+        )
+      )
+      .orderBy("title", "asc");
+
+    console.log("result :", result);
+    if (!result) {
+      return res.status(404).send({
+        message: `No collections found.`,
+      });
+    }
+
+    return res.status(200).send(result);
+  } catch (err) {
+    console.log("erreur :", err);
     return res.status(500).send({
       error: "Failed to fetch collection",
     });
