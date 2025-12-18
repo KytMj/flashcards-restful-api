@@ -1,13 +1,17 @@
 import { Router } from "express";
 import {
   deleteCollection,
-  getCollection,
+  getCollectionById,
   getUserCollections,
   postUserCollection,
   searchPublicCollections,
   patchCollection,
 } from "../controllers/collectionController.js";
-import { validateBody, validateParams } from "../middleware/validation.js";
+import {
+  validateBody,
+  validateParams,
+  validateQuery,
+} from "../middleware/validation.js";
 import { checkToken } from "../middleware/checkToken.js";
 import {
   collectionIdSchema,
@@ -20,23 +24,30 @@ const router = Router();
 
 router.use(checkToken);
 
-router.get("/", getUserCollections);
-router.post("/", validateBody(postCollectionSchema), postUserCollection);
-router.get("/:idCollection", validateParams(collectionIdSchema), getCollection);
-router.post(
+router.get(
   "/search",
-  validateBody(searchCollectionSchema),
+  validateQuery(searchCollectionSchema),
   searchPublicCollections
+);
+
+router.get("/", getUserCollections);
+
+router.get(
+  "/:idCollection",
+  validateParams(collectionIdSchema),
+  getCollectionById
+);
+
+router.post("/", validateBody(postCollectionSchema), postUserCollection);
+router.patch(
+  "/:idCollection",
+  [validateParams(collectionIdSchema), validateBody(patchCollectionSchema)],
+  patchCollection
 );
 router.delete(
   "/:idCollection",
   validateParams(collectionIdSchema),
   deleteCollection
-);
-router.patch(
-  "/:idCollection",
-  [validateParams(collectionIdSchema), validateBody(patchCollectionSchema)],
-  patchCollection
 );
 
 export default router;

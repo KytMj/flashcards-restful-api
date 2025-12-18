@@ -42,3 +42,25 @@ export const validateParams = (schema) => {
     }
   };
 };
+
+export const validateQuery = (schema) => {
+  return (req, res, next) => {
+    if (schema instanceof ZodType) {
+      try {
+        schema.parse(req.query);
+        next();
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return res.status(400).send({
+            error: "Invalid query",
+            details: error.issues,
+          });
+        }
+        console.log(error);
+        return res.status(500).send({
+          error: "Internal server error",
+        });
+      }
+    }
+  };
+};

@@ -29,7 +29,7 @@ export const getUserCollections = async (req, res) => {
  * @param {Response} res
  * @returns
  */
-export const getCollection = async (req, res) => {
+export const getCollectionById = async (req, res) => {
   const { userId, userRole } = req.user;
   const { idCollection } = req.params;
 
@@ -70,7 +70,7 @@ export const getCollection = async (req, res) => {
  * @returns
  */
 export const searchPublicCollections = async (req, res) => {
-  const title = req.body?.title ?? null;
+  const { title } = req.query;
 
   try {
     const result = await db
@@ -86,7 +86,6 @@ export const searchPublicCollections = async (req, res) => {
       )
       .orderBy("title", "asc");
 
-    console.log("result :", result);
     if (!result) {
       return res.status(404).send({
         message: `No collections found.`,
