@@ -140,12 +140,13 @@ export const postUserCollection = async (req, res) => {
  * @param {response} res
  * @returns
  */
-export const deleteCollection = async (req, res) => {
+export const patchCollection = async (req, res) => {
   const { userId, userRole } = req.user;
   const { idCollection } = req.params;
+  const { title = null, description = null, visibility = null } = req.body;
 
   try {
-    const [userResult] = await db
+    const [collectionResult] = await db
       .select()
       .from(collectionsTable)
       .where(
@@ -155,7 +156,61 @@ export const deleteCollection = async (req, res) => {
         )
       );
 
-    if (!userResult && userRole !== "ADMIN") {
+    if (!collectionResult && userRole !== "ADMIN") {
+      return res.status(403).send({
+        message: `Unauthorized to update this collection.`,
+      });
+    }
+
+    const [result] = await db
+      .update(collectionsTable)
+      .set({
+        title: title ?? collectionResult.title,
+        description: description ?? collectionResult.description,
+        visibility: visibility ?? collectionResult.visibility,
+      })
+      .where(eq(collectionsTable.idCollection, idCollection))
+      .returning();
+
+    if (!result) {
+      return res.status(404).send({
+        message: `Collection ${idCollection} not found.`,
+      });
+    }
+
+    return res.status(200).send({
+      message: `Collection ${idCollection} updated succesfully.`,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      error: "Failed to update collection.",
+    });
+  }
+};
+
+/**
+ *
+ * @param {request} req
+ * @param {response} res
+ * @returns
+ */
+export const deleteCollection = async (req, res) => {
+  const { userId, userRole } = req.user;
+  const { idCollection } = req.params;
+
+  try {
+    const [collectionResult] = await db
+      .select()
+      .from(collectionsTable)
+      .where(
+        and(
+          eq(collectionsTable.idCollection, idCollection),
+          eq(collectionsTable.idUser, userId)
+        )
+      );
+
+    if (!collectionResult && userRole !== "ADMIN") {
       return res.status(403).send({
         message: `Unauthorized to delete this collection.`,
       });

@@ -5,6 +5,7 @@ import {
   getUserCollections,
   postUserCollection,
   searchPublicCollections,
+  patchCollection,
 } from "../controllers/collectionController.js";
 import { validateBody, validateParams } from "../middleware/validation.js";
 import { checkToken } from "../middleware/checkToken.js";
@@ -12,6 +13,7 @@ import {
   collectionIdSchema,
   postCollectionSchema,
   searchCollectionSchema,
+  patchCollectionSchema,
 } from "../models/collections.js";
 
 const router = Router();
@@ -30,6 +32,11 @@ router.delete(
   "/:idCollection",
   validateParams(collectionIdSchema),
   deleteCollection
+);
+router.patch(
+  "/:idCollection",
+  [validateParams(collectionIdSchema), validateBody(patchCollectionSchema)],
+  patchCollection
 );
 
 export default router;
