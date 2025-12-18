@@ -123,7 +123,7 @@ export const postUserCollection = async (req, res) => {
       .returning();
     return res.status(201).send({
       message: "Collection created succesfully.",
-      question: result,
+      collection: result,
     });
   } catch (err) {
     console.log(err);
