@@ -139,6 +139,7 @@ export const postUserCollection = async (req, res) => {
  * @param {response} res
  * @returns
  */
+// TO DO : mettre à jour la date de mise à jour !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 export const patchCollection = async (req, res) => {
   const { userId, userRole } = req.user;
   const { idCollection } = req.params;
