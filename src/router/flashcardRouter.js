@@ -3,6 +3,7 @@ import {
   postUserFlashcard,
   getFlashcardById,
   getFlashcardsByCollectionId,
+  getFlashcardsToReviewByCollectionId,
 } from "../controllers/flashcardController.js";
 import { validateBody, validateParams } from "../middleware/validation.js";
 import { checkToken } from "../middleware/checkToken.js";
@@ -22,10 +23,16 @@ router.get(
   validateParams(flashcardIdSchema),
   getFlashcardById
 );
+
 router.get(
   "/collection/:idCollection",
   validateParams(collectionIdSchema),
   getFlashcardsByCollectionId
+);
+router.get(
+  "/collection/:idCollection/to-review",
+  validateParams(collectionIdSchema),
+  getFlashcardsToReviewByCollectionId
 );
 
 export default router;

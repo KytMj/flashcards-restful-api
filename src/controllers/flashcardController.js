@@ -4,6 +4,7 @@ import {
   flashcardsTable,
   urlsTable,
   lower,
+  reviewsTable,
 } from "../db/schema.js";
 import { eq, and, inArray } from "drizzle-orm";
 
@@ -97,9 +98,7 @@ export const getFlashcardById = async (req, res) => {
     const [collectionResult] = await db
       .select()
       .from(collectionsTable)
-      .where(
-        and(eq(collectionsTable.idCollection, flashcardResult.idCollection))
-      );
+      .where(eq(collectionsTable.idCollection, flashcardResult.idCollection));
 
     if (!collectionResult) {
       return res.status(401).send({
@@ -163,7 +162,7 @@ export const getFlashcardsByCollectionId = async (req, res) => {
     const [collectionResult] = await db
       .select()
       .from(collectionsTable)
-      .where(and(eq(collectionsTable.idCollection, idCollection)));
+      .where(eq(collectionsTable.idCollection, idCollection));
 
     if (
       collectionResult === null ||
@@ -192,6 +191,82 @@ export const getFlashcardsByCollectionId = async (req, res) => {
         urls: urlsFlashcard,
       });
     }
+
+    return res.status(200).send({
+      flashcards: result,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      error: "Failed to get flashcards by a collection's id.",
+    });
+  }
+};
+
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @returns
+ */
+export const getFlashcardsToReviewByCollectionId = async (req, res) => {
+  const { userId, userRole } = req.user;
+  const { idCollection } = req.params;
+
+  try {
+    const flashcardList = await db
+      .select()
+      .from(flashcardsTable)
+      .where(eq(flashcardsTable.idCollection, idCollection));
+
+    if (!flashcardList) {
+      return res.status(404).send({
+        message: `FlashCards from collection ${idCollection} not found.`,
+      });
+    }
+
+    const [collectionResult] = await db
+      .select()
+      .from(collectionsTable)
+      .where(eq(collectionsTable.idCollection, idCollection));
+
+    if (
+      collectionResult === null ||
+      collectionResult === undefined ||
+      (collectionResult.visibility === "PRIVATE" &&
+        userId !== collectionResult.idUser &&
+        userRole !== "ADMIN")
+    ) {
+      return res.status(401).send({
+        error: "Unauthorized access.",
+      });
+    }
+
+    const result = [];
+    for (const flashcard of flashcardList) {
+      const [reviewFlashcard] = await db
+        .select()
+        .from(reviewsTable)
+        .where(
+          and(
+            eq(reviewsTable.idFlashcard, flashcard.idFlashcard),
+            eq(reviewsTable.idUser, userId)
+          )
+        );
+
+      // TODO : comment obtenir le même format de timestamp que celui enregistrer avec l'ORM Drizzle ?
+      const dateNow = Date.now(); // pas bon
+
+      if (
+        reviewFlashcard !== null &&
+        reviewFlashcard !== undefined &&
+        reviewFlashcard.nextReview <= dateNow
+      ) {
+        result.push(flashcard);
+      }
+    }
+
+    console.log(Date.now());
 
     return res.status(200).send({
       flashcards: result,
