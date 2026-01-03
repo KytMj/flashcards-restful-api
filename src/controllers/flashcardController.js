@@ -5,7 +5,7 @@ import {
   urlsTable,
   lower,
 } from "../db/schema.js";
-import { eq, and, like } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 /**
  *
@@ -98,10 +98,7 @@ export const getFlashcardById = async (req, res) => {
       .select()
       .from(collectionsTable)
       .where(
-        and(
-          eq(collectionsTable.idCollection, flashcardResult.idCollection),
-          eq(collectionsTable.idUser, userId)
-        )
+        and(eq(collectionsTable.idCollection, flashcardResult.idCollection))
       );
 
     if (!collectionResult) {
@@ -112,27 +109,97 @@ export const getFlashcardById = async (req, res) => {
 
     if (
       collectionResult?.visibility === "PRIVATE" &&
-      userId !== result.idUser &&
+      userId !== collectionResult.idUser &&
       userRole !== "ADMIN"
     ) {
       return res.status(401).send({
-        error: "Unauthorized",
+        error: "Unauthorized access.",
       });
     }
 
-    const [urlResult] = await db
-      .select()
+    const urlsFlashcard = await db
+      .select({
+        idUrl: urlsTable.idUrl,
+        side: urlsTable.side,
+        url: urlsTable.url,
+      })
       .from(urlsTable)
-      .where(eq(urlsTable.idFlashcard, idFlashcard));
+      .where(eq(urlsTable.idFlashcard, flashcardResult.idFlashcard));
 
     return res.status(200).send({
       flashcard: flashcardResult,
-      urls: urlResult,
+      urls: urlsFlashcard,
     });
   } catch (err) {
     console.log(err);
     return res.status(500).send({
       error: "Failed to get flashcard by id",
+    });
+  }
+};
+
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @returns
+ */
+export const getFlashcardsByCollectionId = async (req, res) => {
+  const { userId, userRole } = req.user;
+  const { idCollection } = req.params;
+
+  try {
+    const flashcardList = await db
+      .select()
+      .from(flashcardsTable)
+      .where(eq(flashcardsTable.idCollection, idCollection));
+
+    if (!flashcardList) {
+      return res.status(404).send({
+        message: `FlashCards from collection ${idCollection} not found.`,
+      });
+    }
+
+    const [collectionResult] = await db
+      .select()
+      .from(collectionsTable)
+      .where(and(eq(collectionsTable.idCollection, idCollection)));
+
+    if (
+      collectionResult === null ||
+      collectionResult === undefined ||
+      (collectionResult.visibility === "PRIVATE" &&
+        userId !== collectionResult.idUser &&
+        userRole !== "ADMIN")
+    ) {
+      return res.status(401).send({
+        error: "Unauthorized access.",
+      });
+    }
+
+    const result = [];
+    for (const flashcard of flashcardList) {
+      const urlsFlashcard = await db
+        .select({
+          idUrl: urlsTable.idUrl,
+          side: urlsTable.side,
+          url: urlsTable.url,
+        })
+        .from(urlsTable)
+        .where(eq(urlsTable.idFlashcard, flashcard.idFlashcard));
+      result.push({
+        flashcard: flashcard,
+        urls: urlsFlashcard,
+      });
+    }
+
+    return res.status(200).send({
+      flashcards: result,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      error: "Failed to get flashcards by a collection's id.",
     });
   }
 };
