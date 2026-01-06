@@ -254,12 +254,12 @@ export const getFlashcardsToReviewByCollectionId = async (req, res) => {
           )
         );
 
-      const dateNow = new Date(); 
+      const dateNow = new Date();
 
       if (
         reviewFlashcard !== null &&
         reviewFlashcard !== undefined &&
-        new Date(reviewFlashcard.nextReview * 1000) <= dateNow // convertit la date en secondes en Date lisible par JS
+        reviewFlashcard.nextReview <= dateNow
       ) {
         result.push(flashcard);
       }
