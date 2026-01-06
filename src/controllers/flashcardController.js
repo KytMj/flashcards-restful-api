@@ -254,19 +254,16 @@ export const getFlashcardsToReviewByCollectionId = async (req, res) => {
           )
         );
 
-      // TODO : comment obtenir le même format de timestamp que celui enregistrer avec l'ORM Drizzle ?
-      const dateNow = Date.now(); // pas bon
+      const dateNow = new Date(); 
 
       if (
         reviewFlashcard !== null &&
         reviewFlashcard !== undefined &&
-        reviewFlashcard.nextReview <= dateNow
+        new Date(reviewFlashcard.nextReview * 1000) <= dateNow // convertit la date en secondes en Date lisible par JS
       ) {
         result.push(flashcard);
       }
     }
-
-    console.log(Date.now());
 
     return res.status(200).send({
       flashcards: result,
