@@ -19,3 +19,18 @@ export const postFlashcardSchema = z.object({
     .optional(),
   idCollection: z.uuid(),
 });
+
+export const patchFlashcardSchema = z.object({
+  rectoText: z.string().min(1).max(255).optional(),
+  versoText: z.string().min(1).max(255).optional(),
+  urls: z
+    .array(
+      z
+        .object({
+          side: z.enum(["RECTO", "VERSO"]),
+          url: z.string().min(1).max(2083),
+        })
+        .optional()
+    )
+    .optional(),
+});

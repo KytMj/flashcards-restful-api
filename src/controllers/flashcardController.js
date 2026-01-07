@@ -3,10 +3,9 @@ import {
   collectionsTable,
   flashcardsTable,
   urlsTable,
-  lower,
   reviewsTable,
 } from "../db/schema.js";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 /**
  *
@@ -272,6 +271,95 @@ export const getFlashcardsToReviewByCollectionId = async (req, res) => {
     console.log(err);
     return res.status(500).send({
       error: "Failed to get flashcards by a collection's id.",
+    });
+  }
+};
+
+/**
+ *
+ * @param {request} req
+ * @param {response} res
+ * @returns
+ */
+export const patchFlashcardById = async (req, res) => {
+  const { userId, userRole } = req.user;
+  const { idFlashcard } = req.params;
+  const { rectoText = null, versoText = null } = req.body;
+  const urls = req.body?.urls ?? null;
+  console.log(
+    "versotext :",
+    versoText,
+    "rectotext :",
+    rectoText,
+    "urls :",
+    urls
+  );
+
+  try {
+    const [flashcardResult] = await db
+      .select()
+      .from(flashcardsTable)
+      .where(eq(flashcardsTable.idFlashcard, idFlashcard));
+
+    const [collectionResult] = await db
+      .select()
+      .from(collectionsTable)
+      .where(eq(collectionsTable.idCollection, flashcardResult.idCollection));
+
+    if (!collectionResult) {
+      return res.status(401).send({
+        error: "Flashcard in private collection.",
+      });
+    }
+
+    if (
+      collectionResult?.visibility === "PRIVATE" &&
+      userId !== collectionResult.idUser &&
+      userRole !== "ADMIN"
+    ) {
+      return res.status(401).send({
+        error: "Unauthorized access.",
+      });
+    }
+
+    const [result] = await db
+      .update(flashcardsTable)
+      .set({
+        rectoText: rectoText ?? flashcardResult.rectoText,
+        versoText: versoText ?? flashcardResult.versoText,
+      })
+      .where(eq(flashcardsTable.idFlashcard, idFlashcard))
+      .returning();
+
+    // TODO : Pouvoir ajouter une url lors de la modification !!!!! PAS POSSIBLE ACTUELLEMENT
+    for (let i = 0; i < urls?.length; i++) {
+      const { side, url } = urls[i];
+      await db
+        .update(urlsTable)
+        .set({
+          url,
+        })
+        .where(
+          and(
+            eq(urlsTable.idFlashcard, idFlashcard),
+            side && eq(urlsTable.side, side)
+          )
+        );
+    }
+
+    if (!flashcardResult) {
+      return res.status(404).send({
+        message: `Flashcard ${idFlashcard} not found.`,
+      });
+    }
+
+    return res.status(200).send({
+      message: `Flashcard ${idFlashcard} updated succesfully.`,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      error: "Failed to update flashcard.",
     });
   }
 };
