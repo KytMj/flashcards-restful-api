@@ -19,8 +19,6 @@ Type d’authentification : **Publique** (aucun token requis)
 | `email`    | `String` | **Required** |
 | `password` | `String` | **Required** |
 
-##### Exemple de Body :
-
 ```json
 {
   "email": "pierre.dupont@gmail.com",
@@ -60,8 +58,6 @@ Type d’authentification : **Publique** (aucun token requis)
 | `lastname`  | `String` | **Required** |
 | `password`  | `String` | **Required** |
 
-##### Exemple de Body:
-
 ```json
 {
   "email": "pierre.dupont@gmail.com",
@@ -99,13 +95,13 @@ POST /collections
 
 Type d’authentification : **Privée** (token requis)
 
+##### Body:
+
 | Paramètre     |   Type   |            Description            |
 | ------------- | :------: | :-------------------------------: |
 | `title`       | `String` |           **Required**            |
 | `description` | `String` |           **Required**            |
 | `visibility`  | `String` | **Required** [`PUBLIC`,`PRIVATE`] |
-
-##### Body:
 
 ```json
 {
@@ -168,6 +164,8 @@ Type d’authentification : **Privée** (token requis)
 GET /collections
 ```
 
+Type d’authentification : **Privée** (token requis)
+
 ##### Response:
 
 ```json
@@ -196,15 +194,16 @@ GET /collections
 ### Rechercher des collections publiques
 
 ```http
-GET /collections/search
+GET /collections/search?title=
 ```
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+Type d’authentification : **Privée** (token requis)
 
 ##### Query:
 
+| Paramètre |   Type   | Description  |
+| --------- | :------: | :----------: |
+| `title`   | `String` | **Required** |
 
 ##### Response:
 
@@ -218,20 +217,35 @@ GET /collections/search
 PATCH /collections/:idCollection
 ```
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+Type d’authentification : **Privée** (token requis)
+
+##### Params:
+
+| Paramètre      |  Type  | Description  |
+| -------------- | :----: | :----------: |
+| `idCollection` | `UUID` | **Required** |
 
 ##### Body:
 
+| Paramètre     |   Type   |     Description      |
+| ------------- | :------: | :------------------: |
+| `title`       | `String` |                      |
+| `description` | `String` |                      |
+| `visibility`  | `String` | [`PUBLIC`,`PRIVATE`] |
+
 ```json
-{}
+{
+  "description": "Des tutos Blender détaillés mais plus accessibles car la collection devient privée.",
+  "visibility": "PRIVATE"
+}
 ```
 
 ###### Response:
 
 ```json
-{}
+{
+  "message": "Collection 3ff81de4-20d9-41e3-8665-70d844c9d303 updated succesfully"
+}
 ```
 
 ### Supprimer une collection
@@ -239,6 +253,8 @@ PATCH /collections/:idCollection
 ```http
 DEL /collections/:idCollection
 ```
+
+Type d’authentification : **Privée** (token requis)
 
 | Paramètre | Type | Description  |
 | --------- | :--: | :----------: |
@@ -264,11 +280,13 @@ DEL /collections/:idCollection
 POST /flashcards
 ```
 
+Type d’authentification : **Privée** (token requis)
+
+##### Body:
+
 | Paramètre | Type | Description  |
 | --------- | :--: | :----------: |
 | `.`       | `.`  | **Required** |
-
-##### Body:
 
 ```json
 {}
@@ -286,9 +304,13 @@ POST /flashcards
 GET /flashcards/:idFlashcard
 ```
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+Type d’authentification : **Privée** (token requis)
+
+##### Params:
+
+| Paramètre     |  Type  | Description  |
+| ------------- | :----: | :----------: |
+| `idFlashcard` | `UUID` | **Required** |
 
 ##### Response:
 
@@ -316,15 +338,13 @@ GET /flashcards/:idFlashcard
 GET /flashcards/:idCollection
 ```
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+Type d’authentification : **Privée** (token requis)
 
-##### Body:
+##### Params:
 
-```json
-{}
-```
+| Paramètre      |  Type  | Description  |
+| -------------- | :----: | :----------: |
+| `idCollection` | `UUID` | **Required** |
 
 ##### Response:
 
@@ -338,15 +358,13 @@ GET /flashcards/:idCollection
 GET /flashcards/:idCollection/to-review
 ```
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+Type d’authentification : **Privée** (token requis)
 
-##### Body:
+##### Params:
 
-```json
-{}
-```
+| Paramètre      |  Type  | Description  |
+| -------------- | :----: | :----------: |
+| `idCollection` | `UUID` | **Required** |
 
 ##### Response:
 
@@ -360,11 +378,21 @@ GET /flashcards/:idCollection/to-review
 PATCH /flashcards/:idFlashcard
 ```
 
-| Paramètre | Type | Description |
-| --------- | :--: | :---------: |
-| `.`       | `.`  |             |
+Type d’authentification : **Privée** (token requis)
+
+##### Params:
+
+| Paramètre     |  Type  | Description  |
+| ------------- | :----: | :----------: |
+| `idFlashcard` | `UUID` | **Required** |
 
 ##### Body:
+
+| Paramètre   |      Type       |       Description       |
+| ----------- | :-------------: | :---------------------: |
+| `rectoText` |    `String`     |                         |
+| `versoText` |    `String`     |                         |
+| `urls`      | `Array<Object>` | {"side":..., "url":...} |
 
 ```json
 {
@@ -393,37 +421,33 @@ PATCH /flashcards/:idFlashcard
 DEL /flashcards/:idFlashcard
 ```
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+Type d’authentification : **Privée** (token requis)
 
-##### Body:
+##### Params:
 
-```json
-{}
-```
+| Paramètre     |  Type  | Description  |
+| ------------- | :----: | :----------: |
+| `idFlashcard` | `UUID` | **Required** |
 
 ##### Response:
 
 ```json
-{}
+{
+  "message": "Flashcard f57e7196-22bc-4842-bcb4-196617eed463 deleted succesfully."
+}
 ```
 
 ### Réviser une flashcard
 
 ```http
-????
+???
 ```
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+###### Params:
 
-###### Body:
-
-```json
-{}
-```
+| Paramètre      |  Type  | Description  |
+| -------------- | :----: | :----------: |
+| `idCollection` | `UUID` | **Required** |
 
 ###### Response:
 
@@ -436,17 +460,7 @@ DEL /flashcards/:idFlashcard
 ### Lister les utilisateurs
 
 ```http
-????
-```
-
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
-
-##### Body:
-
-```json
-{}
+GET /users
 ```
 
 ##### Response:
@@ -461,15 +475,11 @@ DEL /flashcards/:idFlashcard
 GET /user/:idUser
 ```
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+##### Params:
 
-##### Body:
-
-```json
-{}
-```
+| Paramètre |  Type  | Description  |
+| --------- | :----: | :----------: |
+| `idUser`  | `UUID` | **Required** |
 
 ##### Response:
 
@@ -483,15 +493,11 @@ GET /user/:idUser
 DEL /user/:idUser
 ```
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+##### Params:
 
-##### Body:
-
-```json
-{}
-```
+| Paramètre |  Type  | Description  |
+| --------- | :----: | :----------: |
+| `idUser`  | `UUID` | **Required** |
 
 ##### Response:
 

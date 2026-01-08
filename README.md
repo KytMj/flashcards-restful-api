@@ -10,7 +10,7 @@ https://clementcatel.notion.site/API-RESTful-avec-Express-js-28b3b8266dbb8053853
 
 # Instructions d'installation
 
-**Avoir Node.js et npm d'installé**
+**Avoir Node.js et npm d'installés**
 
 Installer zod
 
