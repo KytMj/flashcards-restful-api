@@ -5,6 +5,7 @@ import {
   getFlashcardsByCollectionId,
   getFlashcardsToReviewByCollectionId,
   patchFlashcardById,
+  deleteFlashcardById,
 } from "../controllers/flashcardController.js";
 import { validateBody, validateParams } from "../middleware/validation.js";
 import { checkToken } from "../middleware/checkToken.js";
@@ -39,6 +40,11 @@ router.patch(
   "/:idFlashcard",
   [validateParams(flashcardIdSchema), validateBody(patchFlashcardSchema)],
   patchFlashcardById
+);
+router.delete(
+  "/:idFlashcard",
+  validateParams(flashcardIdSchema),
+  deleteFlashcardById
 );
 
 export default router;

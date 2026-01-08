@@ -286,14 +286,6 @@ export const patchFlashcardById = async (req, res) => {
   const { idFlashcard } = req.params;
   const { rectoText = null, versoText = null } = req.body;
   const urls = req.body?.urls ?? null;
-  console.log(
-    "versotext :",
-    versoText,
-    "rectotext :",
-    rectoText,
-    "urls :",
-    urls
-  );
 
   try {
     const [flashcardResult] = await db
@@ -360,6 +352,70 @@ export const patchFlashcardById = async (req, res) => {
     console.log(err);
     return res.status(500).send({
       error: "Failed to update flashcard.",
+    });
+  }
+};
+
+/**
+ *
+ * @param {request} req
+ * @param {response} res
+ * @returns
+ */
+export const deleteFlashcardById = async (req, res) => {
+  const { userId, userRole } = req.user;
+  const { idFlashcard } = req.params;
+
+  try {
+    const [flashcardResult] = await db
+      .select()
+      .from(flashcardsTable)
+      .where(eq(flashcardsTable.idFlashcard, idFlashcard));
+
+    const [collectionResult] = await db
+      .select()
+      .from(collectionsTable)
+      .where(eq(collectionsTable.idCollection, flashcardResult.idCollection));
+
+    if (!collectionResult) {
+      return res.status(401).send({
+        error: "Flashcard in private collection.",
+      });
+    }
+
+    if (
+      collectionResult?.visibility === "PRIVATE" &&
+      userId !== collectionResult.idUser &&
+      userRole !== "ADMIN"
+    ) {
+      return res.status(401).send({
+        error: "Unauthorized access.",
+      });
+    }
+
+    const [result] = await db
+      .delete(flashcardsTable)
+      .where(eq(flashcardsTable.idFlashcard, idFlashcard))
+      .returning();
+
+    const [urlsResult] = await db
+      .delete(urlsTable)
+      .where(eq(urlsTable.idFlashcard, idFlashcard))
+      .returning();
+
+    if (!flashcardResult) {
+      return res.status(404).send({
+        message: `Flashcard ${idFlashcard} not found.`,
+      });
+    }
+
+    return res.status(200).send({
+      message: `Flashcard ${idFlashcard} deleted succesfully.`,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      error: "Failed to delete flashcard.",
     });
   }
 };
