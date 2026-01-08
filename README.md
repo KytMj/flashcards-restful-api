@@ -8,149 +8,51 @@ https://clementcatel.notion.site/R5-05-Projet-de-groupe-2ae3b8266dbb8014b0aac386
 
 https://clementcatel.notion.site/API-RESTful-avec-Express-js-28b3b8266dbb80538538ed332ff276d8
 
-# Utilisation de l'API
+# Instructions d'installation
 
-# Authentification
+**Avoir Node.js et npm d'installé**
 
-# Se connecter
+Installer zod
 
-POST /auth/login
-Body:
-
-```json
-{
-  "email": "pierre.dupont@gmail.com",
-  "password": "Password1234"
-}
+```bash
+npm install zod
 ```
 
-Response:
+Installer Drizzle
 
-```json
-{
-  "message": "User logged.",
-  "user": {
-    "idUser": "c06fa4a8-19bf-4c18-9673-b1a47ef11b0d",
-    "email": "pierre.dupont@gmail.com",
-    "firstname": "Pierre",
-    "lastname": "Dupont"
-  },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Njc4MjM2MzEsImV4cCI6MTc2NzkxMDAzMX0.ecOPWNoR0FjmNEqte4WZ3ik7VbFDCqnATCF_fNjMpSs"
-}
+```bash
+npm install drizzle-orm
 ```
 
-# S'inscrire
+# Configuration (variables d'environnement)
 
-POST /auth/register
-Body:
-
-```json
-{
-  "email": "pierre.dupont@gmail.com",
-  "firstname": "Pierre",
-  "lastname": "Dupont",
-  "password": "Password1234"
-}
+```
+DB_FILE=file:local.db
+JWT_SECRET=52f3e1c6dc9cf3de22985d6c616951fe3c68bc39dda97a5d
 ```
 
-Response:
+# Lancement du projet
 
-```json
-{
-  "message": "User created.",
-  "user": [
-    {
-      "idUser": "4a25e7b0-f5d9-4265-bd6d-1f42de500e78",
-      "role": "USER",
-      "email": "pierre.dupont@gmail.com",
-      "firstname": "Pierre",
-      "lastname": "Dupont"
-    }
-  ],
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Njc4MjM2MzEsImV4cCI6MTc2NzkxMDAzMX0.ecOPWNoR0FjmNEqte4WZ3ik7VbFDCqnATCF_fNjMpSs"
-}
+```bash
+npm run dev
 ```
 
-# Gestion des collections
+# Initialisation de la base
 
-# Créer une collection
+## Lancer la base de données
 
-# Consulter une collection
-
-# Lister ses propres collections
-
-# Rechercher des collections publiques
-
-# Modifier une collection
-
-# Supprimer une collection
-
-# Gestion des flashcards
-
-# Créer une flashcard
-
-# Consulter une flashcard
-
-GET /flashcards/:idFlashcard
-Response:
-
-```json
-{
-  "flashcard": {
-    "idFlashcard": "d7c6fedb-5879-49f3-9c87-f188cc6e7b08",
-    "rectoText": "MANGER",
-    "versoText": "Eat, Ate, Eaten",
-    "idCollection": "65b48049-cbad-4127-81a3-efaf08f363db"
-  },
-  "urls": [
-    {
-      "idUrl": "4882ca4a-923e-4ba5-a5d5-901ffd09cd71",
-      "side": "VERSO",
-      "url": "https://www.theconjugator.com/php5/index.php?l=fr&v=eat"
-    }
-  ]
-}
+```bash
+npm run db:studio
 ```
 
-# Lister les flashcards d’une collection
+## Appliquer les modifications de base de données
 
-# Récupérer les flashcards à réviser d’une collection
-
-# Modifier une flashcard
-
-PATCH /flashcards/:idFlashcard
-Les éléments du body sont optionnels.
-Body:
-
-```json
-{
-  "rectoText": "MANGER",
-  "versoText": "EAT ATE EATEN",
-  "urls": [
-    {
-      "side": "VERSO",
-      "url": "https://www.reverso.net"
-    }
-  ]
-}
+```bash
+npm run db:push
 ```
 
-Response:
+## Remplir la base de données
 
-```json
-{
-  "message": "Flashcard d7c6fedb-5879-49f3-9c87-f188cc6e7b08 updated succesfully."
-}
+```bash
+npm run db:seed
 ```
-
-# Supprimer une flashcard
-
-# Réviser une flashcard
-
-# Gestion des utilisateurs
-
-# Lister les utilisateurs
-
-# Consulter un utilisateur
-
-# Supprimer un utilisateur
