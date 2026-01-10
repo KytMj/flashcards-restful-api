@@ -323,20 +323,46 @@ export const patchFlashcardById = async (req, res) => {
       .where(eq(flashcardsTable.idFlashcard, idFlashcard))
       .returning();
 
-    // TODO : Pouvoir ajouter une url lors de la modification !!!!! PAS POSSIBLE ACTUELLEMENT
-    for (let i = 0; i < urls?.length; i++) {
-      const { side, url } = urls[i];
-      await db
-        .update(urlsTable)
-        .set({
-          url,
-        })
-        .where(
-          and(
-            eq(urlsTable.idFlashcard, idFlashcard),
-            side && eq(urlsTable.side, side)
-          )
-        );
+    if (urls) {
+      for (const urlObject of urls) {
+        const { side, url } = urlObject;
+
+        if (!URL.canParse(url)) {
+          return res.status(400).send({
+            error: "The text in the url field must be a valid URL.",
+          });
+        }
+
+        const [urlFlashcard] = await db
+          .select()
+          .from(urlsTable)
+          .where(
+            and(
+              eq(urlsTable.idFlashcard, idFlashcard),
+              side && eq(urlsTable.side, side)
+            )
+          );
+
+        if (urlFlashcard) {
+          await db
+            .update(urlsTable)
+            .set({
+              url,
+            })
+            .where(
+              and(
+                eq(urlsTable.idFlashcard, idFlashcard),
+                eq(urlsTable.idUrl, urlFlashcard.idUrl)
+              )
+            );
+        } else {
+          await db.insert(urlsTable).values({
+            side,
+            url,
+            idFlashcard: flashcardResult.idFlashcard,
+          });
+        }
+      }
     }
 
     if (!flashcardResult) {
