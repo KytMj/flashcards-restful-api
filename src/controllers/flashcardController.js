@@ -34,6 +34,32 @@ export const postUserFlashcard = async (req, res) => {
       });
     }
 
+    const countSides = { recto: 0, verso: 0 };
+    if (urls) {
+      for (const urlObject of urls) {
+        const { side, url } = urlObject;
+
+        if (side === "RECTO") {
+          countSides.recto++;
+        }
+        if (side === "VERSO") {
+          countSides.verso++;
+        }
+
+        if (countSides.recto > 1 || countSides.verso > 1) {
+          return res.status(400).send({
+            error: "Only one url is allowed on each side.",
+          });
+        }
+
+        if (!URL.canParse(url)) {
+          return res.status(400).send({
+            error: "The text in the url field must be a valid URL.",
+          });
+        }
+      }
+    }
+
     // FlashCard
     const [flashcardResult] = await db
       .insert(flashcardsTable)
@@ -46,17 +72,20 @@ export const postUserFlashcard = async (req, res) => {
 
     const addedUrls = [];
     // URL(S)
-    for (let i = 0; i < urls?.length; i++) {
-      const { side, url } = urls[i];
-      const urlResult = await db
-        .insert(urlsTable)
-        .values({
-          side,
-          url,
-          idFlashcard: flashcardResult.idFlashcard,
-        })
-        .returning();
-      addedUrls.push(urlResult);
+    if (urls) {
+      for (const urlObject of urls) {
+        const { side, url } = urlObject;
+
+        const urlResult = await db
+          .insert(urlsTable)
+          .values({
+            side,
+            url,
+            idFlashcard: flashcardResult.idFlashcard,
+          })
+          .returning();
+        addedUrls.push(urlResult);
+      }
     }
 
     return res.status(201).send({
@@ -314,6 +343,32 @@ export const patchFlashcardById = async (req, res) => {
       });
     }
 
+    const countSides = { recto: 0, verso: 0 };
+    if (urls) {
+      for (const urlObject of urls) {
+        const { side, url } = urlObject;
+
+        if (side === "RECTO") {
+          countSides.recto++;
+        }
+        if (side === "VERSO") {
+          countSides.verso++;
+        }
+
+        if (countSides.recto > 1 || countSides.verso > 1) {
+          return res.status(400).send({
+            error: "Only one url can be changed at once on each side.",
+          });
+        }
+
+        if (!URL.canParse(url)) {
+          return res.status(400).send({
+            error: "The text in the url field must be a valid URL.",
+          });
+        }
+      }
+    }
+
     const [result] = await db
       .update(flashcardsTable)
       .set({
@@ -326,12 +381,6 @@ export const patchFlashcardById = async (req, res) => {
     if (urls) {
       for (const urlObject of urls) {
         const { side, url } = urlObject;
-
-        if (!URL.canParse(url)) {
-          return res.status(400).send({
-            error: "The text in the url field must be a valid URL.",
-          });
-        }
 
         const [urlFlashcard] = await db
           .select()
