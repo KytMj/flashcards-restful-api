@@ -115,7 +115,7 @@ Type d’authentification : **Privée** (token requis)
 
 ```json
 {
-  "message": "Collection created succesfully.",
+  "message": "Collection created successfully.",
   "collection": [
     {
       "idCollection": "3ff81de4-20d9-41e3-8665-70d844c9d303",
@@ -244,7 +244,7 @@ Type d’authentification : **Privée** (token requis)
 
 ```json
 {
-  "message": "Collection 3ff81de4-20d9-41e3-8665-70d844c9d303 updated succesfully"
+  "message": "Collection 3ff81de4-20d9-41e3-8665-70d844c9d303 updated successfully"
 }
 ```
 
@@ -411,7 +411,7 @@ Type d’authentification : **Privée** (token requis)
 
 ```json
 {
-  "message": "Flashcard d7c6fedb-5879-49f3-9c87-f188cc6e7b08 updated succesfully."
+  "message": "Flashcard d7c6fedb-5879-49f3-9c87-f188cc6e7b08 updated successfully."
 }
 ```
 
@@ -433,7 +433,7 @@ Type d’authentification : **Privée** (token requis)
 
 ```json
 {
-  "message": "Flashcard f57e7196-22bc-4842-bcb4-196617eed463 deleted succesfully."
+  "message": "Flashcard f57e7196-22bc-4842-bcb4-196617eed463 deleted successfully."
 }
 ```
 

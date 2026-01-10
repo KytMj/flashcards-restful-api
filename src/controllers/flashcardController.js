@@ -60,7 +60,7 @@ export const postUserFlashcard = async (req, res) => {
     }
 
     return res.status(201).send({
-      message: "Flashcard created succesfully.",
+      message: "Flashcard created successfully.",
       flashcard: flashcardResult,
       urls: addedUrls,
     });
@@ -346,7 +346,7 @@ export const patchFlashcardById = async (req, res) => {
     }
 
     return res.status(200).send({
-      message: `Flashcard ${idFlashcard} updated succesfully.`,
+      message: `Flashcard ${idFlashcard} updated successfully.`,
     });
   } catch (err) {
     console.log(err);
@@ -410,7 +410,7 @@ export const deleteFlashcardById = async (req, res) => {
     }
 
     return res.status(200).send({
-      message: `Flashcard ${idFlashcard} deleted succesfully.`,
+      message: `Flashcard ${idFlashcard} deleted successfully.`,
     });
   } catch (err) {
     console.log(err);

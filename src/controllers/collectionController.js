@@ -122,7 +122,7 @@ export const postUserCollection = async (req, res) => {
       })
       .returning();
     return res.status(201).send({
-      message: "Collection created succesfully.",
+      message: "Collection created successfully.",
       collection: result,
     });
   } catch (err) {
@@ -179,7 +179,7 @@ export const patchCollection = async (req, res) => {
     }
 
     return res.status(200).send({
-      message: `Collection ${idCollection} updated succesfully.`,
+      message: `Collection ${idCollection} updated successfully.`,
     });
   } catch (err) {
     console.log(err);
@@ -228,7 +228,7 @@ export const deleteCollection = async (req, res) => {
     }
 
     return res.status(200).send({
-      message: `Collection ${idCollection} deleted succesfully.`,
+      message: `Collection ${idCollection} deleted successfully.`,
     });
   } catch (err) {
     console.log(err);
