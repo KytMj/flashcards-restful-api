@@ -2,6 +2,7 @@ import express from "express";
 import authRouter from "./router/authRouter.js";
 import collectionRouter from "./router/collectionRouter.js";
 import flashcardRouter from "./router/flashcardRouter.js";
+import userRouter from "./router/userRouter.js";
 import logger from "./middleware/logger.js";
 
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,7 @@ app.use(logger);
 app.use("/auth", authRouter);
 app.use("/collections", collectionRouter);
 app.use("/flashcards", flashcardRouter);
+app.use("/users", userRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
