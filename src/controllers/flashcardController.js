@@ -452,9 +452,9 @@ export const deleteFlashcardById = async (req, res) => {
       .from(collectionsTable)
       .where(eq(collectionsTable.idCollection, flashcardResult.idCollection));
 
-    if (!collectionResult) {
-      return res.status(401).send({
-        error: "Flashcard in private collection.",
+    if (!flashcardResult || !collectionResult) {
+      return res.status(404).send({
+        message: `Flashcard ${idFlashcard} not found.`,
       });
     }
 
@@ -468,21 +468,15 @@ export const deleteFlashcardById = async (req, res) => {
       });
     }
 
-    const [result] = await db
+    await db
       .delete(flashcardsTable)
       .where(eq(flashcardsTable.idFlashcard, idFlashcard))
       .returning();
 
-    const [urlsResult] = await db
+    await db
       .delete(urlsTable)
       .where(eq(urlsTable.idFlashcard, idFlashcard))
       .returning();
-
-    if (!flashcardResult) {
-      return res.status(404).send({
-        message: `Flashcard ${idFlashcard} not found.`,
-      });
-    }
 
     return res.status(200).send({
       message: `Flashcard ${idFlashcard} deleted successfully.`,
@@ -491,6 +485,109 @@ export const deleteFlashcardById = async (req, res) => {
     console.log(err);
     return res.status(500).send({
       error: "Failed to delete flashcard.",
+    });
+  }
+};
+
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @returns
+ */
+export const reviewFlashcard = async (req, res) => {
+  const { userId, userRole } = req.user;
+  const { idFlashcard } = req.params;
+  const { level } = req.body;
+
+  try {
+    const [flashcardResult] = await db
+      .select()
+      .from(flashcardsTable)
+      .where(eq(flashcardsTable.idFlashcard, idFlashcard));
+
+    const [collectionResult] = await db
+      .select()
+      .from(collectionsTable)
+      .where(eq(collectionsTable.idCollection, flashcardResult.idCollection));
+
+    if (
+      !collectionResult ||
+      (collectionResult.visibility === "PRIVATE" &&
+        userId !== collectionResult.idUser &&
+        userRole !== "ADMIN")
+    ) {
+      return res.status(401).send({
+        error: "Unauthorized access.",
+      });
+    }
+
+    const [reviewFlashcardResult] = await db
+      .select()
+      .from(reviewsTable)
+      .where(
+        and(
+          eq(reviewsTable.idFlashcard, idFlashcard),
+          eq(reviewsTable.idUser, userId)
+        )
+      );
+
+    const lastReview = new Date();
+    const nextReview = new Date();
+    switch (level) {
+      case "1":
+        nextReview.setDate(nextReview.getDate() + 1);
+        break;
+      case "2":
+        nextReview.setDate(nextReview.getDate() + 2);
+        break;
+      case "3":
+        nextReview.setDate(nextReview.getDate() + 4);
+        break;
+      case "4":
+        nextReview.setDate(nextReview.getDate() + 8);
+        break;
+      case "5":
+        nextReview.setDate(nextReview.getDate() + 16);
+        break;
+    }
+
+    if (reviewFlashcardResult) {
+      const review = await db
+        .update(reviewsTable)
+        .set({
+          currentLevel: level,
+          lastReview,
+          nextReview,
+        })
+        .where(eq(reviewsTable.idReview, reviewFlashcardResult.idReview))
+        .returning();
+
+      return res.status(200).send({
+        message: "Flashcard review updated.",
+        review: review,
+      });
+    } else {
+      const review = await db
+        .insert(reviewsTable)
+        .values({
+          idUser: userId,
+          idFlashcard,
+          currentLevel: level,
+          lastReview,
+          nextReview,
+        })
+        .returning();
+
+      return res.status(201).send({
+        message: "Flashcard reviewed successfully.",
+        review: review,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      error: "Failed to insert Flashcard",
     });
   }
 };
