@@ -504,3 +504,7 @@ DEL /user/:idUser
 ```json
 {}
 ```
+
+## **Schéma entité-relation de la base de données**
+
+![Alt text](database_schema.png)
