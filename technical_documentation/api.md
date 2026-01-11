@@ -6,6 +6,8 @@
 
 ### Se connecter
 
+Se connecter à son compte. Retourne les informations de l'utilisateur et un token valable 24 heures qui permet l'accès aux autres routes de l'API.
+
 ```http
 POST /auth/login
 ```
@@ -42,6 +44,8 @@ Type d’authentification : **Publique** (aucun token requis)
 ```
 
 ### S'inscrire
+
+Se créer un compte. Retourne les informations de l'utilisateur et un token valable 24 heures qui permet l'accès aux autres routes de l'API.
 
 ```http
 POST /auth/register
@@ -89,6 +93,8 @@ Type d’authentification : **Publique** (aucun token requis)
 
 ### Créer une collection
 
+Créer une collection avec un titre, une description et une visibilité (Privée ou Publique). Retourne les informations de la collection créée.
+
 ```http
 POST /collections
 ```
@@ -132,6 +138,8 @@ Type d’authentification : **Privée** (token requis)
 
 ### Consulter une collection
 
+Consulter une collection avec son identifiant. Retourne les informations de la collection.
+
 ```http
 GET /collections/:idCollection
 ```
@@ -159,6 +167,8 @@ Type d’authentification : **Privée** (token requis)
 ```
 
 ### Lister ses propres collections
+
+Lister les collections du compte connecté. Retourne les informations des collections de l'utilisateur.
 
 ```http
 GET /collections
@@ -193,6 +203,8 @@ Type d’authentification : **Privée** (token requis)
 
 ### Rechercher des collections publiques
 
+Rechercher des collections publiques par le titre. Retourne les collections dont le titre contient les caractères donnés.
+
 ```http
 GET /collections/search?title=
 ```
@@ -212,6 +224,8 @@ Type d’authentification : **Privée** (token requis)
 ```
 
 ### Modifier une collection
+
+Modifier une collection avec son identifiant. On peut y modifier son titre, sa description et sa visibilité. Seul le propriétaire de la collection ou un administrateur peut la modifier.
 
 ```http
 PATCH /collections/:idCollection
@@ -250,31 +264,31 @@ Type d’authentification : **Privée** (token requis)
 
 ### Supprimer une collection
 
+Supprimer une collection avec son identifiant. Seul le propriétaire de la collection ou un administrateur peut la supprimer.
+
 ```http
 DEL /collections/:idCollection
 ```
 
 Type d’authentification : **Privée** (token requis)
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
-
-##### Body:
-
-```json
-{}
-```
+| Paramètre      |  Type  | Description  |
+| -------------- | :----: | :----------: |
+| `idCollection` | `UUID` | **Required** |
 
 ##### Response:
 
 ```json
-{}
+{
+  "message": "Collection 307d17ce-7371-4060-9586-c72d990e7382 deleted successfully."
+}
 ```
 
 ## Gestion des flashcards
 
 ### Créer une flashcard
+
+Créer une flashcard. A besoin de textes pour le recto et le verso de la flashcards, et de l'identifiant de la collection. Les URLS sont optionnelles.
 
 ```http
 POST /flashcards
@@ -284,21 +298,45 @@ Type d’authentification : **Privée** (token requis)
 
 ##### Body:
 
-| Paramètre | Type | Description  |
-| --------- | :--: | :----------: |
-| `.`       | `.`  | **Required** |
+| Paramètre      |      Type       |       Description       |
+| -------------- | :-------------: | :---------------------: |
+| `rectoText`    |    `String`     |      **Required**       |
+| `versoText`    |    `String`     |      **Required**       |
+| `urls`         | `Array<Object>` | {"side":..., "url":...} |
+| `idCollection` |     `UUID`      |      **Required**       |
 
 ```json
-{}
+{
+  "rectoText": "Manger",
+  "versoText": "Eat Ate Eaten",
+  "urls": [
+    {
+      "side": "VERSO",
+      "url": "https://www.reverso.net"
+    }
+  ],
+  "idCollection": "307d17ce-7371-4060-9586-c72d990e7382"
+}
 ```
 
 ##### Response:
 
 ```json
-{}
+{
+  "message": "Flashcard created successfully.",
+  "flashcard": {
+    "idFlashcard": "01e8733f-6b6a-40c1-80e5-42dd1bc6302e",
+    "rectoText": "Tomber",
+    "versoText": "fall - fell - fallen",
+    "idCollection": "307d17ce-7371-4060-9586-c72d990e7382"
+  },
+  "urls": []
+}
 ```
 
 ### Consulter une flashcard
+
+Consulter une flashcard par son identifiant. Retourne les informations de la flashcard et ses URLS (si elle en a).
 
 ```http
 GET /flashcards/:idFlashcard
@@ -334,8 +372,10 @@ Type d’authentification : **Privée** (token requis)
 
 ### Lister les flashcards d’une collection
 
+Lister les flashcards par l'identifiant d'une collection. Accessible à tous si la collection est publique, sinon seul le propriétaire de la collection privée ou un admin peuvent obtenir les informations.
+
 ```http
-GET /flashcards/:idCollection
+GET /flashcards/collection/:idCollection
 ```
 
 Type d’authentification : **Privée** (token requis)
@@ -349,13 +389,42 @@ Type d’authentification : **Privée** (token requis)
 ##### Response:
 
 ```json
-{}
+{
+  "flashcards": [
+    {
+      "flashcard": {
+        "idFlashcard": "d7c6fedb-5879-49f3-9c87-f188cc6e7b08",
+        "rectoText": "MANGER",
+        "versoText": "Eat, Ate, Eaten",
+        "idCollection": "65b48049-cbad-4127-81a3-efaf08f363db"
+      },
+      "urls": [
+        {
+          "idUrl": "4882ca4a-923e-4ba5-a5d5-901ffd09cd71",
+          "side": "VERSO",
+          "url": "https://www.theconjugator.com/php5/index.php?l=fr&v=eat"
+        }
+      ]
+    },
+    {
+      "flashcard": {
+        "idFlashcard": "3991ecd8-699d-4464-9037-cf5b04c4cd6b",
+        "rectoText": "Oublier",
+        "versoText": "forget - forgot, forgotten",
+        "idCollection": "307d17ce-7371-4060-9586-c72d990e7382"
+      },
+      "urls": []
+    }
+  ]
+}
 ```
 
 ### Récupérer les flashcards à réviser d’une collection
 
+Lister les flashcards à réviser par l'utilisateur d'une collection via son identifiant. Retourne les informations des flashcards.
+
 ```http
-GET /flashcards/:idCollection/to-review
+GET /flashcards/collection/:idCollection/to-review
 ```
 
 Type d’authentification : **Privée** (token requis)
@@ -369,7 +438,16 @@ Type d’authentification : **Privée** (token requis)
 ##### Response:
 
 ```json
-{}
+{
+  "flashcards": [
+    {
+      "idFlashcard": "e63bb66f-faa9-433a-becb-6258fccef598",
+      "rectoText": "Cousine Paternelle",
+      "versoText": "Emma",
+      "idCollection": "fe7bbd32-5ce7-497e-84b0-b5c524f83dec"
+    }
+  ]
+}
 ```
 
 ### Modifier une flashcard
@@ -441,20 +519,48 @@ Type d’authentification : **Privée** (token requis)
 
 ### Réviser une flashcard
 
+Réviser une flashcard d'un utilisateur par son identifiant. Niveau 1 = 1 jour, Niveau 2 = 2 jours, Niveau 3 = 4 jours, Niveau 4 = 8 jours, 5 = 16 jours.
+
 ```http
-???
+PUT flashcards/review/:idFlashcard
 ```
+
+Type d’authentification : **Privée** (token requis)
 
 ###### Params:
 
-| Paramètre      |  Type  | Description  |
-| -------------- | :----: | :----------: |
-| `idCollection` | `UUID` | **Required** |
+| Paramètre     |  Type  | Description  |
+| ------------- | :----: | :----------: |
+| `idFlashcard` | `UUID` | **Required** |
+
+###### Body:
+
+| Paramètre |   Type   |            Description             |
+| --------- | :------: | :--------------------------------: |
+| `level`   | `String` | **Required** ["1","2","3","4","5"] |
+
+```json
+{
+  "level": "3"
+}
+```
 
 ###### Response:
 
 ```json
-{}
+{
+  "message": "Flashcard review updated.",
+  "review": [
+    {
+      "idReview": "295b97bb-7554-4923-88ae-eded376ec544",
+      "currentLevel": 3,
+      "lastReview": "2026-01-11T16:52:34.000Z",
+      "nextReview": "2026-01-15T16:52:34.000Z",
+      "idUser": "81eb86b3-7217-4552-8e8e-b92013d9303b",
+      "idFlashcard": "e63bb66f-faa9-433a-becb-6258fccef598"
+    }
+  ]
+}
 ```
 
 ## Gestion des utilisateurs
