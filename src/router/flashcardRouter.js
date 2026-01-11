@@ -6,6 +6,7 @@ import {
   getFlashcardsToReviewByCollectionId,
   patchFlashcardById,
   deleteFlashcardById,
+  reviewFlashcard,
 } from "../controllers/flashcardController.js";
 import { validateBody, validateParams } from "../middleware/validation.js";
 import { checkToken } from "../middleware/checkToken.js";
@@ -13,6 +14,7 @@ import {
   postFlashcardSchema,
   flashcardIdSchema,
   patchFlashcardSchema,
+  reviewFlashcardSchema,
 } from "../models/flashcards.js";
 import { collectionIdSchema } from "../models/collections.js";
 
@@ -40,6 +42,11 @@ router.patch(
   "/:idFlashcard",
   [validateParams(flashcardIdSchema), validateBody(patchFlashcardSchema)],
   patchFlashcardById
+);
+router.put(
+  "/review/:idFlashcard",
+  [validateParams(flashcardIdSchema), validateBody(reviewFlashcardSchema)],
+  reviewFlashcard
 );
 router.delete(
   "/:idFlashcard",

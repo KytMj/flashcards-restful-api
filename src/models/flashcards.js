@@ -34,3 +34,7 @@ export const patchFlashcardSchema = z.object({
     )
     .optional(),
 });
+
+export const reviewFlashcardSchema = z.object({
+  level: z.enum(["1", "2", "3", "4", "5"]),
+});

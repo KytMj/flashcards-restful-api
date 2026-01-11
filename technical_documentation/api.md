@@ -590,3 +590,7 @@ Type d’authentification : **ADMIN ONLY** (token et role admin requis)
   "message": "User 882e5664-8b19-4079-adb6-11d4756cd298 deleted successfully."
 }
 ```
+
+## **Schéma entité-relation de la base de données**
+
+![Alt text](database_schema.png)

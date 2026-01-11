@@ -34,6 +34,32 @@ export const postUserFlashcard = async (req, res) => {
       });
     }
 
+    const countSides = { recto: 0, verso: 0 };
+    if (urls) {
+      for (const urlObject of urls) {
+        const { side, url } = urlObject;
+
+        if (side === "RECTO") {
+          countSides.recto++;
+        }
+        if (side === "VERSO") {
+          countSides.verso++;
+        }
+
+        if (countSides.recto > 1 || countSides.verso > 1) {
+          return res.status(400).send({
+            error: "Only one url is allowed on each side.",
+          });
+        }
+
+        if (!URL.canParse(url)) {
+          return res.status(400).send({
+            error: "The text in the url field must be a valid URL.",
+          });
+        }
+      }
+    }
+
     // FlashCard
     const [flashcardResult] = await db
       .insert(flashcardsTable)
@@ -46,17 +72,20 @@ export const postUserFlashcard = async (req, res) => {
 
     const addedUrls = [];
     // URL(S)
-    for (let i = 0; i < urls?.length; i++) {
-      const { side, url } = urls[i];
-      const urlResult = await db
-        .insert(urlsTable)
-        .values({
-          side,
-          url,
-          idFlashcard: flashcardResult.idFlashcard,
-        })
-        .returning();
-      addedUrls.push(urlResult);
+    if (urls) {
+      for (const urlObject of urls) {
+        const { side, url } = urlObject;
+
+        const urlResult = await db
+          .insert(urlsTable)
+          .values({
+            side,
+            url,
+            idFlashcard: flashcardResult.idFlashcard,
+          })
+          .returning();
+        addedUrls.push(urlResult);
+      }
     }
 
     return res.status(201).send({
@@ -314,6 +343,32 @@ export const patchFlashcardById = async (req, res) => {
       });
     }
 
+    const countSides = { recto: 0, verso: 0 };
+    if (urls) {
+      for (const urlObject of urls) {
+        const { side, url } = urlObject;
+
+        if (side === "RECTO") {
+          countSides.recto++;
+        }
+        if (side === "VERSO") {
+          countSides.verso++;
+        }
+
+        if (countSides.recto > 1 || countSides.verso > 1) {
+          return res.status(400).send({
+            error: "Only one url can be changed at once on each side.",
+          });
+        }
+
+        if (!URL.canParse(url)) {
+          return res.status(400).send({
+            error: "The text in the url field must be a valid URL.",
+          });
+        }
+      }
+    }
+
     const [result] = await db
       .update(flashcardsTable)
       .set({
@@ -323,20 +378,40 @@ export const patchFlashcardById = async (req, res) => {
       .where(eq(flashcardsTable.idFlashcard, idFlashcard))
       .returning();
 
-    // TODO : Pouvoir ajouter une url lors de la modification !!!!! PAS POSSIBLE ACTUELLEMENT
-    for (let i = 0; i < urls?.length; i++) {
-      const { side, url } = urls[i];
-      await db
-        .update(urlsTable)
-        .set({
-          url,
-        })
-        .where(
-          and(
-            eq(urlsTable.idFlashcard, idFlashcard),
-            side && eq(urlsTable.side, side)
-          )
-        );
+    if (urls) {
+      for (const urlObject of urls) {
+        const { side, url } = urlObject;
+
+        const [urlFlashcard] = await db
+          .select()
+          .from(urlsTable)
+          .where(
+            and(
+              eq(urlsTable.idFlashcard, idFlashcard),
+              side && eq(urlsTable.side, side)
+            )
+          );
+
+        if (urlFlashcard) {
+          await db
+            .update(urlsTable)
+            .set({
+              url,
+            })
+            .where(
+              and(
+                eq(urlsTable.idFlashcard, idFlashcard),
+                eq(urlsTable.idUrl, urlFlashcard.idUrl)
+              )
+            );
+        } else {
+          await db.insert(urlsTable).values({
+            side,
+            url,
+            idFlashcard: flashcardResult.idFlashcard,
+          });
+        }
+      }
     }
 
     if (!flashcardResult) {
@@ -377,9 +452,9 @@ export const deleteFlashcardById = async (req, res) => {
       .from(collectionsTable)
       .where(eq(collectionsTable.idCollection, flashcardResult.idCollection));
 
-    if (!collectionResult) {
-      return res.status(401).send({
-        error: "Flashcard in private collection.",
+    if (!flashcardResult || !collectionResult) {
+      return res.status(404).send({
+        message: `Flashcard ${idFlashcard} not found.`,
       });
     }
 
@@ -393,21 +468,15 @@ export const deleteFlashcardById = async (req, res) => {
       });
     }
 
-    const [result] = await db
+    await db
       .delete(flashcardsTable)
       .where(eq(flashcardsTable.idFlashcard, idFlashcard))
       .returning();
 
-    const [urlsResult] = await db
+    await db
       .delete(urlsTable)
       .where(eq(urlsTable.idFlashcard, idFlashcard))
       .returning();
-
-    if (!flashcardResult) {
-      return res.status(404).send({
-        message: `Flashcard ${idFlashcard} not found.`,
-      });
-    }
 
     return res.status(200).send({
       message: `Flashcard ${idFlashcard} deleted successfully.`,
@@ -416,6 +485,109 @@ export const deleteFlashcardById = async (req, res) => {
     console.log(err);
     return res.status(500).send({
       error: "Failed to delete flashcard.",
+    });
+  }
+};
+
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @returns
+ */
+export const reviewFlashcard = async (req, res) => {
+  const { userId, userRole } = req.user;
+  const { idFlashcard } = req.params;
+  const { level } = req.body;
+
+  try {
+    const [flashcardResult] = await db
+      .select()
+      .from(flashcardsTable)
+      .where(eq(flashcardsTable.idFlashcard, idFlashcard));
+
+    const [collectionResult] = await db
+      .select()
+      .from(collectionsTable)
+      .where(eq(collectionsTable.idCollection, flashcardResult.idCollection));
+
+    if (
+      !collectionResult ||
+      (collectionResult.visibility === "PRIVATE" &&
+        userId !== collectionResult.idUser &&
+        userRole !== "ADMIN")
+    ) {
+      return res.status(401).send({
+        error: "Unauthorized access.",
+      });
+    }
+
+    const [reviewFlashcardResult] = await db
+      .select()
+      .from(reviewsTable)
+      .where(
+        and(
+          eq(reviewsTable.idFlashcard, idFlashcard),
+          eq(reviewsTable.idUser, userId)
+        )
+      );
+
+    const lastReview = new Date();
+    const nextReview = new Date();
+    switch (level) {
+      case "1":
+        nextReview.setDate(nextReview.getDate() + 1);
+        break;
+      case "2":
+        nextReview.setDate(nextReview.getDate() + 2);
+        break;
+      case "3":
+        nextReview.setDate(nextReview.getDate() + 4);
+        break;
+      case "4":
+        nextReview.setDate(nextReview.getDate() + 8);
+        break;
+      case "5":
+        nextReview.setDate(nextReview.getDate() + 16);
+        break;
+    }
+
+    if (reviewFlashcardResult) {
+      const review = await db
+        .update(reviewsTable)
+        .set({
+          currentLevel: level,
+          lastReview,
+          nextReview,
+        })
+        .where(eq(reviewsTable.idReview, reviewFlashcardResult.idReview))
+        .returning();
+
+      return res.status(200).send({
+        message: "Flashcard review updated.",
+        review: review,
+      });
+    } else {
+      const review = await db
+        .insert(reviewsTable)
+        .values({
+          idUser: userId,
+          idFlashcard,
+          currentLevel: level,
+          lastReview,
+          nextReview,
+        })
+        .returning();
+
+      return res.status(201).send({
+        message: "Flashcard reviewed successfully.",
+        review: review,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      error: "Failed to insert Flashcard",
     });
   }
 };
