@@ -55,7 +55,9 @@ export const getCollectionById = async (req, res) => {
       });
     }
 
-    return res.status(200).send(result);
+    return res.status(200).send({
+      collection: result,
+    });
   } catch (err) {
     return res.status(500).send({
       error: "Failed to fetch collection",
@@ -92,9 +94,11 @@ export const searchPublicCollections = async (req, res) => {
       });
     }
 
-    return res.status(200).send(result);
+    return res.status(200).send({
+      collections: result,
+    });
   } catch (err) {
-    console.log("erreur :", err);
+    console.log(err);
     return res.status(500).send({
       error: "Failed to fetch collection",
     });

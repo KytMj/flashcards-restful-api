@@ -72,7 +72,7 @@ export const getUserById = async (req, res) => {
       });
     }
 
-    return res.status(201).send({
+    return res.status(200).send({
       user: userResult,
       collections: collectionsResult,
       reviewsResult: reviewsResult,
@@ -113,7 +113,7 @@ export const deleteUserById = async (req, res) => {
       });
     }
 
-    return res.status(200).send({
+    return res.status(204).send({
       message: `User ${idUser} deleted successfully.`,
     });
   } catch (err) {

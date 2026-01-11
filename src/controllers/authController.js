@@ -28,8 +28,6 @@ export const register = async (req, res) => {
       });
     }
 
-    console.log(firstname, lastname, email, hashPassword);
-
     const userData = await db
       .insert(usersTable)
       .values({ email, firstname, lastname, password: hashPassword })
@@ -101,7 +99,7 @@ export const login = async (req, res) => {
       { expiresIn: "24h" }
     );
 
-    return res.status(201).send({
+    return res.status(200).send({
       message: "User logged.",
       user: {
         idUser: userResult.idUser,

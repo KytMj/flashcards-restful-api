@@ -478,7 +478,7 @@ export const deleteFlashcardById = async (req, res) => {
       .where(eq(urlsTable.idFlashcard, idFlashcard))
       .returning();
 
-    return res.status(200).send({
+    return res.status(204).send({
       message: `Flashcard ${idFlashcard} deleted successfully.`,
     });
   } catch (err) {
