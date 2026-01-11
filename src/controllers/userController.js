@@ -3,10 +3,15 @@ import { usersTable, collectionsTable, reviewsTable } from "../db/schema.js";
 import { desc, eq } from "drizzle-orm";
 
 /**
+ * Récupère la liste de tous les utilisateurs.
+ * Retourne les informations de tous les utilisateurs, triés par date de création (plus récent en premier).
+ * Exclut le champ `password` pour des raisons de sécurité.
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const getUsers = async (req, res) => {
   try {
@@ -35,10 +40,16 @@ export const getUsers = async (req, res) => {
 };
 
 /**
+ * Récupère les informations détaillées d'un utilisateur.
+ * Retourne l'utilisateur, ses collections et ses revues (révisions de flashcards).
+ * Exclut le champ `password` pour des raisons de sécurité.
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {404} Si l'utilisateur n'existe pas
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const getUserById = async (req, res) => {
   const { idUser } = req.params;
@@ -86,10 +97,17 @@ export const getUserById = async (req, res) => {
 };
 
 /**
+ * Supprime un utilisateur par son identifiant.
+ * Supprime en cascade ses collections, flashcards, URLs et revues.
+ * Un utilisateur ne peut pas supprimer son propre compte (sauf un administrateur).
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {401} Si l'utilisateur tente de supprimer son propre compte
+ * @throws {404} Si l'utilisateur à supprimer n'existe pas
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const deleteUserById = async (req, res) => {
   const { userId } = req.user;
@@ -113,7 +131,7 @@ export const deleteUserById = async (req, res) => {
       });
     }
 
-    return res.status(204).send({
+    return res.status(200).send({
       message: `User ${idUser} deleted successfully.`,
     });
   } catch (err) {

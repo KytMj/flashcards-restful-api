@@ -3,10 +3,14 @@ import { collectionsTable, lower } from "../db/schema.js";
 import { eq, and, like } from "drizzle-orm";
 
 /**
+ * Récupère toutes les collections de l'utilisateur connecté.
+ * Retourne les informations de toutes ses collections.
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const getUserCollections = async (req, res) => {
   const { userId } = req.user;
@@ -15,7 +19,9 @@ export const getUserCollections = async (req, res) => {
       .select()
       .from(collectionsTable)
       .where(eq(userId, collectionsTable.idUser));
-    return res.status(200).send(result);
+    return res.status(200).send({
+      collections: result,
+    });
   } catch (err) {
     return res.status(500).send({
       error: "Failed to fetch user's collections.",
@@ -24,10 +30,16 @@ export const getUserCollections = async (req, res) => {
 };
 
 /**
+ * Récupère une collection par son identifiant.
+ * Vérifie les permissions d'accès (privée/publique).
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {404} Si la collection n'existe pas
+ * @throws {401} Si la collection est privée et l'utilisateur n'est pas propriétaire/admin
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object} Objet contenant les informations de la collection
+ *
  */
 export const getCollectionById = async (req, res) => {
   const { userId, userRole } = req.user;
@@ -66,10 +78,15 @@ export const getCollectionById = async (req, res) => {
 };
 
 /**
+ * Recherche les collections publiques par titre.
+ * Retourne les collections dont le titre contient les caractères donnés.
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {404} Si aucune collection n'est trouvée
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const searchPublicCollections = async (req, res) => {
   const { title } = req.query;
@@ -106,10 +123,14 @@ export const searchPublicCollections = async (req, res) => {
 };
 
 /**
+ * Crée une nouvelle collection pour l'utilisateur connecté.
+ * Retourne les informations de la collection créée.
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const postUserCollection = async (req, res) => {
   const { userId } = req.user;
@@ -138,10 +159,16 @@ export const postUserCollection = async (req, res) => {
 };
 
 /**
+ * Modifie une collection existante.
+ * Seul le propriétaire de la collection ou un administrateur peut la modifier.
  *
- * @param {request} req
- * @param {response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {403} Si l'utilisateur n'est pas propriétaire et n'est pas admin
+ * @throws {404} Si la collection n'existe pas
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const patchCollection = async (req, res) => {
   const { userId, userRole } = req.user;
@@ -194,10 +221,17 @@ export const patchCollection = async (req, res) => {
 };
 
 /**
+ * Supprime une collection existante.
+ * Supprime aussi en cascade toutes les flashcards, URLs et revues associées.
+ * Seul le propriétaire de la collection ou un administrateur peut la supprimer.
  *
- * @param {request} req
- * @param {response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {403} Si l'utilisateur n'est pas propriétaire et n'est pas admin
+ * @throws {404} Si la collection n'existe pas
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const deleteCollection = async (req, res) => {
   const { userId, userRole } = req.user;

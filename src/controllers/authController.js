@@ -6,10 +6,14 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 /**
+ * Crée un nouvel utilisateur et retourne un token JWT valable 24 heures.
  *
  * @param {Request} req
  * @param {Response} res
- * @returns
+ * @throws {401} Si un utilisateur avec cet email existe déjà
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const register = async (req, res) => {
   try {
@@ -62,10 +66,15 @@ export const register = async (req, res) => {
 };
 
 /**
+ * Authentifie un utilisateur avec ses identifiants (email et mot de passe).
+ * Retourne les informations de l'utilisateur et un token JWT valable 24 heures.
  *
  * @param {Request} req
  * @param {Response} res
- * @returns
+ * @throws {401} Si l'email ou le mot de passe est incorrect
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const login = async (req, res) => {
   try {

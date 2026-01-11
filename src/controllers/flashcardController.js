@@ -8,10 +8,16 @@ import {
 import { eq, and } from "drizzle-orm";
 
 /**
+ * Crée une nouvelle flashcard pour l'utilisateur connecté.
+ * Valide que l'utilisateur a accès à la collection et que les URLs sont valides.
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {401} Si l'utilisateur n'a pas accès à la collection
+ * @throws {400} Si les URLs sont invalides ou si plus d'une URL par side
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const postUserFlashcard = async (req, res) => {
   const { userId, userRole } = req.user;
@@ -102,10 +108,16 @@ export const postUserFlashcard = async (req, res) => {
 };
 
 /**
+ * Récupère une flashcard par son identifiant.
+ * Vérifie les permissions d'accès selon la visibilité de la collection.
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {404} Si la flashcard n'existe pas
+ * @throws {401} Si l'utilisateur n'a pas accès à la collection (privée)
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const getFlashcardById = async (req, res) => {
   const { userId, userRole } = req.user;
@@ -166,10 +178,16 @@ export const getFlashcardById = async (req, res) => {
 };
 
 /**
+ * Récupère toutes les flashcards d'une collection.
+ * Accessible à tous si la collection est publique, sinon seul le propriétaire/admin.
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {404} Si aucune flashcard trouvée
+ * @throws {401} Si la collection est privée et l'utilisateur n'a pas accès
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const getFlashcardsByCollectionId = async (req, res) => {
   const { userId, userRole } = req.user;
@@ -232,10 +250,16 @@ export const getFlashcardsByCollectionId = async (req, res) => {
 };
 
 /**
+ * Récupère les flashcards à réviser pour l'utilisateur dans une collection.
+ * Retourne seulement les flashcards dont la date de révision est passée.
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {404} Si aucune flashcard trouvée dans la collection
+ * @throws {401} Si la collection est privée et l'utilisateur n'a pas accès
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const getFlashcardsToReviewByCollectionId = async (req, res) => {
   const { userId, userRole } = req.user;
@@ -305,10 +329,17 @@ export const getFlashcardsToReviewByCollectionId = async (req, res) => {
 };
 
 /**
+ * Modifie une flashcard existante.
+ * Valide les permissions d'accès à la collection et met à jour les URLs si fournies.
  *
- * @param {request} req
- * @param {response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {401} Si la collection est privée et l'utilisateur n'a pas accès
+ * @throws {404} Si la flashcard n'existe pas
+ * @throws {400} Si les URLs sont invalides ou si plus d'une URL par side
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const patchFlashcardById = async (req, res) => {
   const { userId, userRole } = req.user;
@@ -432,10 +463,16 @@ export const patchFlashcardById = async (req, res) => {
 };
 
 /**
+ * Supprime une flashcard et toutes ses URLs associées.
+ * Supprime aussi les revues associées via contrainte de base de données.
  *
- * @param {request} req
- * @param {response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {404} Si la flashcard n'existe pas
+ * @throws {401} Si la collection est privée et l'utilisateur n'a pas accès
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const deleteFlashcardById = async (req, res) => {
   const { userId, userRole } = req.user;
@@ -478,7 +515,7 @@ export const deleteFlashcardById = async (req, res) => {
       .where(eq(urlsTable.idFlashcard, idFlashcard))
       .returning();
 
-    return res.status(204).send({
+    return res.status(200).send({
       message: `Flashcard ${idFlashcard} deleted successfully.`,
     });
   } catch (err) {
@@ -490,10 +527,20 @@ export const deleteFlashcardById = async (req, res) => {
 };
 
 /**
+ * Révise une flashcard et met à jour ou crée un enregistrement de révision.
+ * Le niveau détermine la date de prochaine révision :
+ * - Niveau 1 : +1 jour
+ * - Niveau 2 : +2 jours
+ * - Niveau 3 : +4 jours
+ * - Niveau 4 : +8 jours
+ * - Niveau 5 : +16 jours
  *
- * @param {Request} req
- * @param {Response} res
- * @returns
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @throws {401} Si la collection est privée et l'utilisateur n'a pas accès
+ * @throws {500} Si une erreur serveur se produit
+ * @returns {Object}
+ *
  */
 export const reviewFlashcard = async (req, res) => {
   const { userId, userRole } = req.user;
