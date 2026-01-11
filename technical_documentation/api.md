@@ -220,7 +220,37 @@ Type d’authentification : **Privée** (token requis)
 ##### Response:
 
 ```json
-{}
+{
+  "collections": [
+    {
+      "idCollection": "307d17ce-7371-4060-9586-c72d990e7382",
+      "title": "Verbes irréguliers en Anglais",
+      "description": "Les verbes irréguliers en Anglais : trouver la conjugaison et la définition.",
+      "visibility": "PUBLIC",
+      "createdAt": "2026-01-10T16:28:08.000Z",
+      "updatedAt": "2026-01-10T16:28:08.000Z",
+      "idUser": "f7336708-1f1d-4994-81af-da457cb5aa42"
+    },
+    {
+      "idCollection": "2745feca-0d99-4ddc-ae0b-fb2f23fe6e70",
+      "title": "Culture Générale",
+      "description": "Questions de culture générale.",
+      "visibility": "PUBLIC",
+      "createdAt": "2026-01-10T16:28:08.000Z",
+      "updatedAt": "2026-01-10T16:28:08.000Z",
+      "idUser": "f7336708-1f1d-4994-81af-da457cb5aa42"
+    },
+    {
+      "idCollection": "e1178576-56d3-4af8-aacd-52d9fd5e57ee",
+      "title": "Capitale du monde",
+      "description": "Questions sur les capitales du monde. #GEOGRAPHIE #CAPITALE #MONDE",
+      "visibility": "PUBLIC",
+      "createdAt": "2026-01-10T16:28:08.000Z",
+      "updatedAt": "2026-01-10T16:28:08.000Z",
+      "idUser": "81eb86b3-7217-4552-8e8e-b92013d9303b"
+    }
+  ]
+}
 ```
 
 ### Modifier une collection
