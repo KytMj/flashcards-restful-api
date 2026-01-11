@@ -417,6 +417,8 @@ Type d’authentification : **Privée** (token requis)
 
 ### Supprimer une flashcard
 
+Suppprimer une flashcard avec son identifiant. Supprime aussi les revues associées.
+
 ```http
 DEL /flashcards/:idFlashcard
 ```
@@ -459,22 +461,60 @@ Type d’authentification : **Privée** (token requis)
 
 ### Lister les utilisateurs
 
+Lister tous les utilisateurs. Retourne la liste de tous les utilisateurs, triés par ordre de création (le plus récent en premier).
+
 ```http
 GET /users
 ```
 
+Type d’authentification : **ADMIN ONLY** (token et role admin requis)
+
 ##### Response:
 
 ```json
-{}
+{
+  "users": [
+    {
+      "idUser": "f7336708-1f1d-4994-81af-da457cb5aa42",
+      "email": "cassandre.yontailleux@gmail.com",
+      "firstname": "Cassandre",
+      "lastname": "Yon-Tailleux",
+      "createdAt": "2026-01-10T16:28:08.000Z",
+      "updatedAt": "2026-01-10T16:28:08.000Z",
+      "role": "ADMIN"
+    },
+    {
+      "idUser": "882e5664-8b19-4079-adb6-11d4756cd298",
+      "email": "philomene.duclos14890@gmail.com",
+      "firstname": "Philomène",
+      "lastname": "Duclos",
+      "createdAt": "2026-01-10T16:28:08.000Z",
+      "updatedAt": "2026-01-10T16:28:08.000Z",
+      "role": "USER"
+    },
+    {
+      "idUser": "40030d41-d110-4c06-a088-ab883dcb828b",
+      "email": "jp75016@gmail.com",
+      "firstname": "Jean-Paul",
+      "lastname": "Flandin",
+      "createdAt": "2026-01-10T16:28:08.000Z",
+      "updatedAt": "2026-01-10T16:28:08.000Z",
+      "role": "USER"
+    }
+  ]
+}
 ```
 
 ### Consulter un utilisateur
+
+Consulter un utilisateur par son identifiant. Retourne les informations de l'utilisateur, ses collections et ses revues.
 
 ```http
 GET /user/:idUser
 ```
 
+Type d’authentification : **ADMIN ONLY** (token et role admin requis)
+
 ##### Params:
 
 | Paramètre |  Type  | Description  |
@@ -484,15 +524,59 @@ GET /user/:idUser
 ##### Response:
 
 ```json
-{}
+{
+  "user": {
+    "idUser": "f7336708-1f1d-4994-81af-da457cb5aa42",
+    "email": "cassandre.yontailleux@gmail.com",
+    "firstname": "Cassandre",
+    "lastname": "Yon-Tailleux",
+    "createdAt": "2026-01-10T16:28:08.000Z",
+    "updatedAt": "2026-01-10T16:28:08.000Z",
+    "role": "ADMIN"
+  },
+  "collections": [
+    {
+      "idCollection": "307d17ce-7371-4060-9586-c72d990e7382",
+      "title": "Verbes irréguliers en Anglais",
+      "description": "Les verbes irréguliers en Anglais : trouver la conjugaison et la définition.",
+      "visibility": "PUBLIC",
+      "createdAt": "2026-01-10T16:28:08.000Z",
+      "updatedAt": "2026-01-10T16:28:08.000Z",
+      "idUser": "f7336708-1f1d-4994-81af-da457cb5aa42"
+    },
+    {
+      "idCollection": "2745feca-0d99-4ddc-ae0b-fb2f23fe6e70",
+      "title": "Culture Générale",
+      "description": "Questions de culture générale.",
+      "visibility": "PUBLIC",
+      "createdAt": "2026-01-10T16:28:08.000Z",
+      "updatedAt": "2026-01-10T16:28:08.000Z",
+      "idUser": "f7336708-1f1d-4994-81af-da457cb5aa42"
+    }
+  ],
+  "reviewsResult": [
+    {
+      "idReview": "fe3ebafe-4863-4f74-b703-901577d3aa2c",
+      "currentLevel": 5,
+      "lastReview": "2026-01-10T16:28:08.000Z",
+      "nextReview": "2026-01-26T16:28:08.000Z",
+      "idUser": "f7336708-1f1d-4994-81af-da457cb5aa42",
+      "idFlashcard": "01e8733f-6b6a-40c1-80e5-42dd1bc6302e"
+    }
+  ]
+}
 ```
 
 ### Supprimer un utilisateur
+
+Supprimer un utilisateur par son identifiant. Supprime en cascade ses collections, ses flashcards, ses urls et ses reviews. Les collections et les flashcards supprimées suppriment aussi les revues des autres utilisateurs.
 
 ```http
 DEL /user/:idUser
 ```
 
+Type d’authentification : **ADMIN ONLY** (token et role admin requis)
+
 ##### Params:
 
 | Paramètre |  Type  | Description  |
@@ -502,5 +586,7 @@ DEL /user/:idUser
 ##### Response:
 
 ```json
-{}
+{
+  "message": "User 882e5664-8b19-4079-adb6-11d4756cd298 deleted successfully."
+}
 ```
