@@ -99,7 +99,7 @@ export const getUserById = async (req, res) => {
 /**
  * Supprime un utilisateur par son identifiant.
  * Supprime en cascade ses collections, flashcards, URLs et revues.
- * Un utilisateur ne peut pas supprimer son propre compte (sauf un administrateur).
+ * Un utilisateur ne peut pas supprimer son propre compte (même en étant un administrateur).
  *
  * @param {Request} req - Requête Express
  * @param {Response} res - Réponse Express
@@ -116,7 +116,7 @@ export const deleteUserById = async (req, res) => {
   try {
     if (userId === idUser) {
       return res.status(401).send({
-        error: "Unauthorized.",
+        error: "Unauthorized account deletion.",
       });
     }
 
